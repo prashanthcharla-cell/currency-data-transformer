@@ -2,4 +2,12 @@ package com.currency_data_transformer.model.request;
 
 import org.springframework.web.multipart.MultipartFile;
 
-public record UploadFileRequest(MultipartFile file) {}
+import com.currency_data_transformer.validation.ValidFile;
+
+import jakarta.validation.constraints.NotNull;
+
+public record UploadFileRequest(
+    @NotNull(message = "File is required")
+    @ValidFile
+    MultipartFile file
+) {}
