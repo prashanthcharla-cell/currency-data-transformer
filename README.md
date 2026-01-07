@@ -16,6 +16,7 @@ A Spring Boot 4.0.2 application designed to process foreign currency transaction
 ## 🛠 Features
 
 * **Asynchronous Processing:** Upload large CSV files and track conversion status via a Job ID.
+* **CSV Validation:** Comprehensive validation of uploaded CSV files with detailed error reporting.
 * **Currency Conversion:** Automated math to convert USD, EUR, and GBP to INR.
 * **Data Persistence:** Stores job metadata and processing status in H2.
 * **JSON Transformation:** Generates a structured financial report from raw CSV data.
@@ -95,6 +96,68 @@ Date,TransactionID,Amount,Currency
 2026-01-01,TXN001,100.00,USD
 2026-01-02,TXN002,50.50,EUR
 
+```
+
+### CSV Validation Rules
+
+The application performs comprehensive validation on uploaded CSV files:
+
+#### File Validation
+- File must be a CSV with `.csv` extension
+- File must not be empty
+- File must contain valid CSV headers: `Date`, `TransactionID`, `Amount`, `Currency`
+
+#### Data Validation
+
+**Date Field:**
+- Must not be empty
+- Supports multiple formats: `yyyy-MM-dd`, `dd/MM/yyyy`, `MM/dd/yyyy`
+- Example: `2024-01-15`, `15/01/2024`, or `01/15/2024`
+
+**TransactionID Field:**
+- Must not be empty
+- Maximum 100 characters
+- Only alphanumeric characters, underscores, and hyphens allowed
+- Example: `TXN-001`, `TXN_123`, `ABC123`
+
+**Amount Field:**
+- Must not be empty
+- Must be a valid positive number
+- Maximum 2 decimal places
+- Example: `100`, `100.5`, `100.50`
+
+**Currency Field:**
+- Must not be empty
+- Must be a valid 3-letter ISO 4217 currency code (uppercase)
+- Example: `USD`, `EUR`, `GBP`, `JPY`, `CAD`
+
+#### Validation Response
+
+**Successful Validation:**
+```json
+{
+  "jobId": "uuid-here",
+  "status": "COMPLETED",
+  "message": "File validated successfully. Processed 10 valid transactions."
+}
+```
+
+**Partial Validation (Some Invalid Rows):**
+```json
+{
+  "jobId": "uuid-here",
+  "status": "COMPLETED_WITH_WARNINGS",
+  "message": "File processed with warnings. 8 valid transactions, 2 invalid rows. Errors: Line 3: Amount must be positive; Line 5: Invalid date format..."
+}
+```
+
+**Failed Validation:**
+```json
+{
+  "jobId": "uuid-here",
+  "status": "FAILED",
+  "message": "File validation failed. No valid transactions found. Errors: ..."
+}
 ```
 
 ---
